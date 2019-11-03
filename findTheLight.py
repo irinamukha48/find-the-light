@@ -12,10 +12,14 @@ WINDOWHEIGHT = 600
 
 def loadPlayer():
     downimg = pygame.image.load('humandown.png')
+    downStretchedimg = pygame.transform.scale(downimg, (40, 40))
     upimg = pygame.image.load('humanup.png')
+    upStretchedimg = pygame.transform.scale(upimg, (40, 40))
     leftimg = pygame.image.load('humanleft.png')
+    leftStretchedimg = pygame.transform.scale(leftimg, (40, 40))
     rightimg = pygame.image.load('humanright.png')
-    return downimg, upimg, leftimg, rightimg
+    rightStretchedimg = pygame.transform.scale(rightimg, (40, 40))
+    return downStretchedimg, upStretchedimg, leftStretchedimg, rightStretchedimg
 
 
 def makeWalls(txtFile):
@@ -89,7 +93,7 @@ def main():
     mainClock = pygame.time.Clock()
 
     screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), 0, 32)
-    pygame.display.set_caption('haha gaem')
+    pygame.display.set_caption('Find the Light - HackPHS 2019 - Irina Mukhametzhanova')
 
     startx, starty, finishx, finishy = generateLevel()
     walls = makeWalls("randLevel.txt")
@@ -100,14 +104,27 @@ def main():
     moveRight = False
 
     collideUp = False
+    collideRight = False
+    collideLeft = False
+    collideDown = False
 
     iter = 0
+    stariter = 0
 
-    player = pygame.Rect(startx*50, starty*50, 50, 50)
+    player = pygame.Rect((startx-1)*50+5, (starty-1)*50+5, 40, 40)
+    star = pygame.Rect((finishx-1)*50+9, (finishy-1)*50+9, 32, 32)
 
     downStretchedimg, upStretchedimg, leftStretchedimg, rightStretchedimg = loadPlayer()
     curimg = downStretchedimg
-    bg = pygame.image.load('bg.png').convert()
+
+    downimages = [pygame.image.load('humandown.png'), pygame.image.load('humandown2.png'), pygame.image.load('humandown3.png'), pygame.image.load('humandown4.png')]
+    upimages = [pygame.image.load('humanup.png'), pygame.image.load('humanup2.png'), pygame.image.load('humanup3.png'), pygame.image.load('humanup4.png')]
+    leftimages = [pygame.image.load('humanleft.png'), pygame.image.load('humanleft2.png'), pygame.image.load('humanleft3.png'), pygame.image.load('humanleft4.png')]
+    rightimages = [pygame.image.load('humanright.png'), pygame.image.load('humanright2.png'), pygame.image.load('humanright3.png'), pygame.image.load('humanright4.png')]
+
+    starimages = [pygame.image.load('star1.png'), pygame.image.load('star2.png')]
+    curstarimage = starimages[0]
+    bg = pygame.image.load('bg2.png').convert()
 
     while True:
         for event in pygame.event.get():
@@ -138,33 +155,94 @@ def main():
                     moveLeft = False
                 if event.key == K_RIGHT:
                     moveRight = False
+                iter = 0
 
         screen.blit(bg, (0, 0))
+        flag = False
+
+        if player.colliderect(star):
+            flag = True
 
         for wall in walls:
             screen.blit(wall['img'], wall['rect'])
-            ##check collision - doesnt reset to false
+
+        collision = False
+        for wall in walls:
             if player.colliderect(wall['rect']):
-                if player.top < wall['rect'].bottom - 70:
-                    collideUp = True
-                else:
-                    collideUp = False
+                collision = True
+                if (player.top > wall['rect'].top and player.top < wall['rect'].bottom) or (player.bottom > wall['rect'].top and player.bottom < wall['rect'].bottom):
+                    if player.right > wall['rect'].left and player.left < wall['rect'].left:
+                        collideRight = True
+                        collideLeft = False
+                    if player.left < wall['rect'].right and player.right > wall['rect'].right:
+                        collideLeft = True
+                        collideRight = False
+                if (player.left > wall['rect'].left and player.left < wall['rect'].right) or (player.right > wall['rect'].left and player.right < wall['rect'].right):
+                    if player.top < wall['rect'].bottom and player.bottom > wall['rect'].bottom:
+                        collideUp = True
+                        collideDown = False
+                    if player.bottom > wall['rect'].top and player.top < wall['rect'].top:
+                        collideDown = True
+                        collideUp = False
 
-        if moveUp and player.top > 0 and collideUp is False:
-            curimg = upStretchedimg
-            player.top -= 2
-        if moveDown and player.bottom < WINDOWHEIGHT:
-            curimg = downStretchedimg
-            player.bottom += 2
+        if collision is False:
+            collideRight = False
+            collideLeft = False
+            collideUp = False
+            collideDown = False
 
-        if moveLeft and player.left > 0:
-            curimg = leftStretchedimg
-            player.left -= 2
-        if moveRight and player.right < WINDOWWIDTH:
-            curimg = rightStretchedimg
-            player.left += 2
+        if moveUp and player.top > 0 and (collideUp is False):
+            if iter == 0:
+                curimg = upStretchedimg
+            elif iter%50 == 0:
+                curimg = upimages[int(int(iter)/50)]
+            if iter > 198:
+                iter = -1
+            iter += 1
+            player.top -= 1
+        if moveDown and player.bottom < WINDOWHEIGHT and (collideDown is False):
+            if iter == 0:
+                curimg = downStretchedimg
+            elif iter%50 == 0:
+                curimg = downimages[int(int(iter)/50)]
+            if iter > 198:
+                iter = -1
+            iter += 1
+            player.bottom += 1
+        if moveLeft and player.left > 0 and (collideLeft is False):
+            if iter == 0:
+                curimg = leftStretchedimg
+            elif iter%50 == 0:
+                curimg = leftimages[int(int(iter)/50)]
+            if iter > 198:
+                iter = -1
+            iter += 1
+            player.left -= 1
+        if moveRight and player.right < WINDOWWIDTH and (collideRight is False):
+            if iter == 0:
+                curimg = rightStretchedimg
+            elif iter%50 == 0:
+                curimg = rightimages[int(int(iter)/50)]
+            if iter > 198:
+                iter = -1
+            iter += 1
+            player.left += 1
 
-        screen.blit(curimg, player)
+        if stariter%25 == 0:
+            curstarimage = starimages[int(stariter/25)]
+        if stariter > 48:
+            stariter = -1
+        stariter += 1
+
+        if not flag:
+            screen.blit(curimg, player)
+            screen.blit(curstarimage, star)
+        else:
+            left, top, sleft, stop = generateLevel()
+            player = pygame.Rect((left-1)*50+5, (top-1)*50+5, 40, 40)
+            star = pygame.Rect((sleft-1)*50+9, (stop-1)*50+9, 32, 32)
+            walls = makeWalls("randLevel.txt")
+            flag = False
 
         pygame.display.update()
         mainClock.tick(400)

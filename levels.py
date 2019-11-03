@@ -20,8 +20,6 @@ def generateLevel():
     curx = startx
     cury = starty
 
-    coordinates = []
-
     levelGrid = [['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'],
                  ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'],
                  ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'],
@@ -37,9 +35,11 @@ def generateLevel():
                  ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'],
                  ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W']]
 
+    levelGrid[starty][startx] = 'G'
+
     for step in range(150):
         randDir = random.choice(dirs)
-        while (curx == 1 and randDir == 'w') or (curx == 12 and randDir == 'e') or (cury == 1 and randDir == 'n') or (cury == 12 and randDir == 's'):
+        while (curx <= 1 and randDir == 'w') or (curx >= 12 and randDir == 'e') or (cury <= 1 and randDir == 'n') or (cury >= 12 and randDir == 's'):
             randDir = random.choice(dirs)
 
         if randDir == 'w':
@@ -56,6 +56,7 @@ def generateLevel():
         if step == 149:
             finishx = curx
             finishy = cury
+            levelGrid[finishy][finishx] = 'G'
 
     levelStr = ""
 
@@ -125,11 +126,5 @@ def generateLevel():
     prevLevel.close()
 
     return startx, starty, finishx, finishy
-
-
-def main():
-    generateLevel()
-
-main()
 
 
